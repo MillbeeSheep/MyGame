@@ -1,0 +1,29 @@
+name: Build and Release to Public Repo
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish single-file executable
+        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o out
+
+      - name: Upload to Public Repo Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.exe
+          repository: MillbeeSheep/MyGame
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
